@@ -20,7 +20,7 @@ suite.addTest(loader.loadTestsFromModule(test_del))
 with open(file_path.test_report_path,'wb') as file:
     runner = HTMLTestRunnerNew.HTMLTestRunner(stream=file,
                                               verbosity=2,
-                                              title=file_path.curr+'快消接口测试报告',
+                                              title='快消接口测试报告',
                                               description='基础信息，账单，绑定接口',
                                               )
     # runner = unittest.TextTestRunner(stream=file, descriptions=True, verbosity=2)
