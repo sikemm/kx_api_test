@@ -32,13 +32,15 @@ class Reflex:
     CurrentVersion = MyConfig().get_string('CurrentVersion','CurrentVersion')  #最新的版本号
     #===================会员模块所需参数===================
     #会员办卡,客户名称、编码、电话号码随机生成5位，也用于新增商品时的商品名称，商品code
-    PersonName = str(chr(random.randint(0x4e00, 0x9fbf)))
+    firstname = ['王','刘','左','张','陈','肖']
+    x = random.choice(firstname)
+    PersonName = x+str(chr(random.randint(0x4e00, 0x9fbf)))
     PersonCode = str(random.randint(0x4e00, 0x9fbf))
 
     #pos端会员办卡时需要的办卡时间，会员卡类型，等级
     JoinTime = str(datetime.datetime.now())
-    MemberCardTypeId = '1'
-    MemberCardTypeLevelId = '1'
+    MemberCardTypeId = None
+    MemberCardTypeLevelId = None
 
     #客户id，会员id
     MemberPersonId = None

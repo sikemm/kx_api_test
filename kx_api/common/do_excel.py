@@ -21,7 +21,7 @@ class DoExcel:
             row_data ={}  #空字典，存储每一行的数据
             row_data['CaseId'] = sheet.cell(i,1).value
             row_data['Module'] = sheet.cell(i,2).value
-            print(sheet.cell(i,3).value)
+            # print(sheet.cell(i,3).value)
             if sheet.cell(i,3).value.find('webserverAddress') !=-1:
                 row_data['url'] = sheet.cell(i,3).value.replace('webserverAddress',self.my_config.get_string('serverAddress','web_server_address'))
             elif sheet.cell(i,3).value.find('serverAddress') !=-1:

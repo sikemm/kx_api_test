@@ -15,7 +15,6 @@ file_name = file_path.api_case_path
 sheet_name = 'BMember'
 test_data = DoExcel(file_name).read_data(sheet_name)
 
-print(test_data)
 @ddt
 class TestCases(unittest.TestCase):
     '''该类是完成会员模块的测试用例'''
@@ -43,7 +42,7 @@ class TestCases(unittest.TestCase):
         MyLog().info('URL：{0}，Params：{1}'.format(case['url'],params))
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
-
+        print(resp.text)
         # 绑定成功后，获取服务器返回的店铺storeid等,posid,绑定posid，注意str的使用，设置时，只能是字符串
         if resp.text.find('businessType') != -1:
             setattr(Reflex, 'StoreId', resp.json()['result']['id'])
@@ -53,32 +52,34 @@ class TestCases(unittest.TestCase):
             setattr(Reflex, 'ClientPosBindId', str(resp.json()['Result']['Id']))
 
 
-        #获取会员类型，会员卡等级[随便找一个，用于会员卡新增,现在是默认写死的
-        # if url.find('GetMemberCardTypeLevelList') !=-1:
-        #     setattr(Reflex, 'MemberCardTypeLevelId', str(resp.json()['Result'][0]['Id']))
-        #     setattr(Reflex, 'MemberCardTypeId', str(resp.json()['Result'][0]['MemberCardTypeId']))
-        #新增会员成功后，获取客户id，会员id
-        if case['url'].find('CreateMemberInfo') !=-1:
-            setattr(Reflex,'MemberPersonId',str(resp.json()['Result']['Id']))
-            setattr(Reflex,'MemberUserId',str(resp.json()['Result']['MemberUser']['Id']))
-            setattr(Reflex, 'MemberPersonName', str(resp.json()['Result']['PersonName']))
-            # 新增会员后，操作会员电话号码加1写入表格，便于下次使用
-            tel = str(int(case['Params']['PersonPhone']) + 1)
-            self.f.write_data(2, 1, tel, 'PersonPhone')
+        if resp.json()['Success'] == True:
+            if url.find('GetMemberCardTypeLevelList') !=-1:
+                # 获取会员类型，会员卡等级[随便找一个，用于会员卡新增,现在是默认写死的
+                setattr(Reflex, 'MemberCardTypeLevelId', str(resp.json()['Result'][0]['Id']))
+                setattr(Reflex, 'MemberCardTypeId', str(resp.json()['Result'][0]['MemberCardTypeId']))
+            if case['url'].find('CreateMemberInfo') !=-1:
+                # 新增会员成功后，获取客户id，会员id
+                setattr(Reflex,'MemberPersonId',str(resp.json()['Result']['Id']))
+                setattr(Reflex,'MemberUserId',str(resp.json()['Result']['MemberUser']['Id']))
+                setattr(Reflex, 'MemberPersonName', str(resp.json()['Result']['PersonName']))
+                # 新增会员后，操作会员电话号码加1写入表格，便于下次使用
+                tel = str(int(case['Params']['PersonPhone']) + 1)
+                self.f.write_data(2, 1, tel, 'PersonPhone')
+            if case['url'].find('MemberPay') !=-1:
+                # 会员支付成功后，获取支付id
+                setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
 
-        #会员支付成功后，获取支付id
-        if case['url'].find('MemberPay') !=-1:
-            setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
         try:
-            #----------待优化-------
+            #-------待优化-------
             ActualResult={}
             ActualResult['Success'] = resp.json()['Success']
             self.assertEqual(eval(case['ExpectedResult']),ActualResult)
             test_result = 'pass'
         except AssertionError as e:
             test_result = 'failed'
-            error_message = resp.json()['Error']['Message']
-            MyLog().error('ERROR：{}'.format(error_message))
+            if resp.json()['Error'] != None:
+                error_message = resp.json()['Error']['Message']
+                MyLog().error('ERROR：{}'.format(error_message))
             MyLog().error('用例执行失败：{}'.format(e))
             raise e
         finally:

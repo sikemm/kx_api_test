@@ -42,7 +42,7 @@ class TestCases(unittest.TestCase):
         MyLog().info('URL：{0}，Params：{1}'.format(case['url'],params))
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
-
+        print(resp.text)
         #绑定成功后，获取服务器返回的店铺storeid等,posid,绑定posid，注意str的使用，设置时，只能是字符串
         if resp.text.find('businessType') != -1:
             setattr(Reflex, 'StoreId', resp.json()['result']['id'])
@@ -50,65 +50,65 @@ class TestCases(unittest.TestCase):
             setattr(Reflex, 'PosId', resp.json()['result']['id'])
         elif resp.text.find('PosId') !=-1:
             setattr(Reflex, 'ClientPosBindId', str(resp.json()['Result']['Id']))
+
+
         #绑定成功后，获取基础信息中的某些参数，用于后续接口使用
-
-        #获取商品分类主键,取返回后的第一个列表中的数据
-        if url.find('GetBaseProductCategoryList') !=-1:
-            setattr(Reflex,'BaseProductCategoryId',str(resp.json()['Result'][0]['Id']))
-        # 获取商品主键,根据以获取的商品分类去找商品
-        if url.find('GetBaseProductList') !=-1:
-            i= findId(resp.json()['Result'],'ProductCategoryId',int(getattr(Reflex,'BaseProductCategoryId')))
-            setattr(Reflex,'ProductId',str(i['Id']))
-        #获取商品规格主键，根据获取的商品主键去找规格id
-        if url.find('GetBaseProductStandardList') !=-1:
-            i= findId(resp.json()['Result'],'ProductId',int(getattr(Reflex,'ProductId')))
-            setattr(Reflex,'ProductStandardId',str(i['Id']))
-
-        #获取结账方式主键
-        if url.find('GetBasePaymentWayList') !=-1:
-            #人民币
-            RMB= findId(resp.json()['Result'],'Code','00001')['Id']
-            setattr(Reflex,'RMBId',str(RMB))
-            #会员卡支付
-            MemberCardPayId = findId(resp.json()['Result'], 'Code', '00003')['Id']
-            setattr(Reflex, 'MemberCardPayId', str(MemberCardPayId))
-            #任我行支付
-            GraspPayId = findId(resp.json()['Result'], 'Code', '00002')['Id']
-            setattr(Reflex, 'GraspPayId', str(GraspPayId))
-            #抹零
-            MLPayId = findId(resp.json()['Result'], 'Code', 'YH001')['Id']
-            setattr(Reflex, 'MLPayId', str(MLPayId))
-            #优惠
-            YHPayId = findId(resp.json()['Result'], 'Code', 'YH002')['Id']
-            setattr(Reflex, 'YHPayId', str(YHPayId))
-            #赠送
-            ZSPayId = findId(resp.json()['Result'], 'Code', 'YH003')['Id']
-            setattr(Reflex, 'ZSPayId', str(ZSPayId))
-            #免单
-            MDPayId = findId(resp.json()['Result'], 'Code', 'YH005')['Id']
-            setattr(Reflex, 'MDPayId', str(MDPayId))
-
-        #获取用户信息，取返回的第一个数据
-        if url.find('GetUserList') !=-1:
-            UserId = findId(resp.json()['Result'], 'UserName',getattr(Reflex,'UserName') )['Id']
-            setattr(Reflex, 'UserId', str(UserId))
-
-        #营销方案主键数据待增加resp.text.find('全场8折') !=-1:
-        if url.find('GetProjectMasterList') !=-1:
-            i = findId(resp.json()['Result'], 'Name', '全场8折')
-            setattr(Reflex, 'AZProjectId', str(i['Id']))
-            i = findId(resp.json()['Result'], 'Name', '薯片7折')
-            setattr(Reflex, 'ZProjectId', str(i['Id']))
-            i = findId(resp.json()['Result'], 'Name', '果冻特价8元')
-            setattr(Reflex, 'TProjectId', str(i['Id']))
-        #获取营销方案中商品规格主键
-        if url.find('GetProjectProductStandard4DiscountList') !=-1:
-            #获取薯片的商品规格
-            i = findId(resp.json()['Result'], 'ProjectId',int(getattr(Reflex,'ZProjectId')) )
-            setattr(Reflex, 'ZProductStandardId', str(i['ProductStandardId']))
-            #获取果冻的商品规格
-            i = findId(resp.json()['Result'], 'ProjectId', int(getattr(Reflex,'TProjectId')))
-            setattr(Reflex, 'TProductStandardId', str(i['ProductStandardId']))
+        if case['Module'] != 'web' :
+            if resp.json()['Success'] == True:
+                if url.find('GetBaseProductCategoryList') !=-1:
+                    # 获取商品分类主键,取返回后的第一个列表中的数据
+                    setattr(Reflex,'BaseProductCategoryId',str(resp.json()['Result'][0]['Id']))
+                if url.find('GetBaseProductList') !=-1:
+                    # 获取商品主键,根据以获取的商品分类去找商品
+                    i= findId(resp.json()['Result'],'ProductCategoryId',int(getattr(Reflex,'BaseProductCategoryId')))
+                    setattr(Reflex,'ProductId',str(i['Id']))
+                if url.find('GetBaseProductStandardList') !=-1:
+                    # 获取商品规格主键，根据获取的商品主键去找规格id
+                    i= findId(resp.json()['Result'],'ProductId',int(getattr(Reflex,'ProductId')))
+                    setattr(Reflex,'ProductStandardId',str(i['Id']))
+                if url.find('GetBasePaymentWayList') !=-1:
+                    # 获取结账方式主键
+                    #人民币
+                    RMB= findId(resp.json()['Result'],'Code','00001')['Id']
+                    setattr(Reflex,'RMBId',str(RMB))
+                    #会员卡支付
+                    MemberCardPayId = findId(resp.json()['Result'], 'Code', '00003')['Id']
+                    setattr(Reflex, 'MemberCardPayId', str(MemberCardPayId))
+                    #任我行支付
+                    GraspPayId = findId(resp.json()['Result'], 'Code', '00002')['Id']
+                    setattr(Reflex, 'GraspPayId', str(GraspPayId))
+                    #抹零
+                    MLPayId = findId(resp.json()['Result'], 'Code', 'YH001')['Id']
+                    setattr(Reflex, 'MLPayId', str(MLPayId))
+                    #优惠
+                    YHPayId = findId(resp.json()['Result'], 'Code', 'YH002')['Id']
+                    setattr(Reflex, 'YHPayId', str(YHPayId))
+                    #赠送
+                    ZSPayId = findId(resp.json()['Result'], 'Code', 'YH003')['Id']
+                    setattr(Reflex, 'ZSPayId', str(ZSPayId))
+                    #免单
+                    MDPayId = findId(resp.json()['Result'], 'Code', 'YH005')['Id']
+                    setattr(Reflex, 'MDPayId', str(MDPayId))
+                if url.find('GetUserList') !=-1:
+                    # 获取用户信息，取返回的第一个数据
+                    UserId = findId(resp.json()['Result'], 'UserName',getattr(Reflex,'UserName') )['Id']
+                    setattr(Reflex, 'UserId', str(UserId))
+                if url.find('GetProjectMasterList') !=-1:
+                    # 营销方案主键数据待增加resp.text.find('全场8折') !=-1:
+                    i = findId(resp.json()['Result'], 'Name', '全场8折')
+                    setattr(Reflex, 'AZProjectId', str(i['Id']))
+                    i = findId(resp.json()['Result'], 'Name', '薯片7折')
+                    setattr(Reflex, 'ZProjectId', str(i['Id']))
+                    i = findId(resp.json()['Result'], 'Name', '果冻特价8元')
+                    setattr(Reflex, 'TProjectId', str(i['Id']))
+                if url.find('GetProjectProductStandard4DiscountList') !=-1:
+                    # 获取营销方案中商品规格主键
+                    #获取薯片的商品规格
+                    i = findId(resp.json()['Result'], 'ProjectId',int(getattr(Reflex,'ZProjectId')) )
+                    setattr(Reflex, 'ZProductStandardId', str(i['ProductStandardId']))
+                    #获取果冻的商品规格
+                    i = findId(resp.json()['Result'], 'ProjectId', int(getattr(Reflex,'TProjectId')))
+                    setattr(Reflex, 'TProductStandardId', str(i['ProductStandardId']))
 
         # web登录成功后，返回的body里面带有token信息，需要将token信息放在header里面一起请求
         if resp.text.find('accessToken') != -1:
@@ -133,8 +133,9 @@ class TestCases(unittest.TestCase):
             test_result = 'pass'
         except AssertionError as e:
             test_result = 'failed'
-            error_message = resp.json()['Error']['Message']
-            MyLog().error('ERROR：{}'.format(error_message))
+            if resp.json()['Error'] != None:
+                error_message = resp.json()['Error']['Message']
+                MyLog().error('ERROR：{}'.format(error_message))
             MyLog().error('用例执行失败：{}'.format(e))
             raise e
         finally:
