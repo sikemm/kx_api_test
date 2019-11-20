@@ -27,7 +27,7 @@ class TestCases(unittest.TestCase):
         setattr(Reflex,'BillNumber',BillNumber)
         setattr(Reflex, 'GraspBillNumberId', BillNumber)
         setattr(Reflex, 'OriginalBillNumber', OriginalBillNumber)
-        #获取班次号
+        #获取班次号\OrderDetailId
         ShiftKey = self.f.read_tel('ShiftKey')
         LastShiftKey = str(int(ShiftKey)-1)
         setattr(Reflex,'ShiftKey',ShiftKey)
@@ -35,27 +35,31 @@ class TestCases(unittest.TestCase):
         #获取商品条码
         BarCode = self.f.read_tel('BarCode')
         setattr(Reflex, 'BarCode', BarCode)
-
+        LastBarCode = str(int(BarCode) - 1)
+        setattr(Reflex, 'LastBarCode', LastBarCode)
 
     def tearDown(self):
+        #每次用例执行完成后，账单编号和班次号+1
         billnumber = str(int(getattr(Reflex, 'BillNumber')) + 1)
         self.f.write_data(2, 1, billnumber, 'billNumber')
+        ShiftKeyNew = str(int(getattr(Reflex, 'ShiftKey')) + 1)
+        self.f.write_data(2, 1, ShiftKeyNew, 'ShiftKey')
 
     @data(*test_data)
     def test_checkOut(self,case):
         global test_result
         method = case['Method']
         url = case['url']
-        print(case['Params'])
         #替换测试用例中的params的参数
-        if case['Params'] == None:
+        if case['Params'] != None:
+            if case['Method'].upper() == 'GET':
+                params = eval(re_replace(case['Params']))
+            elif case['Method'].upper() == 'DELETE':
+                params = eval(re_replace(case['Params']))
+            elif case['Method'].upper() == 'POST':
+                params = re_replace(case['Params'])
+        else:
             params = case['Params']
-        elif case['Method'].upper() == 'GET':
-            params = eval(re_replace(case['Params']))
-        elif case['Method'].upper() == 'DELETE':
-            params = eval(re_replace(case['Params']))
-        elif case['Method'].upper() == 'POST':
-            params = re_replace(case['Params'])
 
         MyLog().info('---=正在执行{0}模块第{1}条测试用例:{2}----'.format(case['Module'],case['CaseId'],case['Title']))
         MyLog().info('URL：{0}，Params：{1}'.format(case['url'],params))
@@ -74,15 +78,11 @@ class TestCases(unittest.TestCase):
             header['Authorization'] = 'Bearer ' + AccessToken
             setattr(Reflex, 'header', header)
 
-        #执行了交班，表格里面的班次号+1
-        if url.find('PostShift') !=-1:
-            ShiftKeyNew = str(int(getattr(Reflex,'ShiftKey'))+1)
-            self.f.write_data(2,1,ShiftKeyNew,'ShiftKey')
-
         #执行了创建商品后，商品条码+1
-        if url.find('CreateBaseProduct') !=-1:
-            BarCodeNew = str(int(getattr(Reflex,'BarCode'))+1)
-            self.f.write_data(2,1,BarCodeNew,'BarCode')
+        if resp.json()['Success'] == True:
+            if url.find('CreateBaseProduct') !=-1:
+                BarCodeNew = str(int(getattr(Reflex,'BarCode'))+1)
+                self.f.write_data(2,1,BarCodeNew,'BarCode')
 
         try:
             #----------待优化-------

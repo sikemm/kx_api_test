@@ -10,6 +10,7 @@ class Reflex:
     header = {
         'Content-Type': 'application/json;charset=utf-8',
     }
+
     #公司编号和租户id
     TenancyName = MyConfig().get_string('base','TenancyName')
     TenantId = MyConfig().get_string('base','TenantId')  #租户id，配置文件设置的定值
@@ -94,6 +95,8 @@ class Reflex:
 
     #创建商品所需要的条形码
     BarCode= None
+    #查询新增成功的商品条码
+    LastBarCode = None
     #用户班次号excel维护，每次交班后加1
     ShiftKey = None
     LastShiftKey = None

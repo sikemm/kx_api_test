@@ -43,14 +43,6 @@ class TestCases(unittest.TestCase):
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
         print(resp.text)
-        # 绑定成功后，获取服务器返回的店铺storeid等,posid,绑定posid，注意str的使用，设置时，只能是字符串
-        if resp.text.find('businessType') != -1:
-            setattr(Reflex, 'StoreId', resp.json()['result']['id'])
-        elif resp.text.find('communicationPassword') != -1:
-            setattr(Reflex, 'PosId', resp.json()['result']['id'])
-        elif resp.text.find('PosId') != -1:
-            setattr(Reflex, 'ClientPosBindId', str(resp.json()['Result']['Id']))
-
 
         if resp.json()['Success'] == True:
             if url.find('GetMemberCardTypeLevelList') !=-1:
@@ -63,11 +55,12 @@ class TestCases(unittest.TestCase):
                 setattr(Reflex,'MemberUserId',str(resp.json()['Result']['MemberUser']['Id']))
                 setattr(Reflex, 'MemberPersonName', str(resp.json()['Result']['PersonName']))
                 # 新增会员后，操作会员电话号码加1写入表格，便于下次使用
-                tel = str(int(case['Params']['PersonPhone']) + 1)
+                tel = str(int(eval(params)['PersonPhone']) + 1)
                 self.f.write_data(2, 1, tel, 'PersonPhone')
-            if case['url'].find('MemberPay') !=-1:
-                # 会员支付成功后，获取支付id
-                setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
+            if case['Module'] == 'MemberPay':
+                if case['url'].find('MemberPay') !=-1:
+                    # 会员支付成功后，获取支付id
+                    setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
 
         try:
             #-------待优化-------

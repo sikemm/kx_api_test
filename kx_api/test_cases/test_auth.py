@@ -106,9 +106,11 @@ class TestCases(unittest.TestCase):
                     #获取薯片的商品规格
                     i = findId(resp.json()['Result'], 'ProjectId',int(getattr(Reflex,'ZProjectId')) )
                     setattr(Reflex, 'ZProductStandardId', str(i['ProductStandardId']))
+                if url.find('GetProjectProductStandard4SpecialPriceList') !=-1:
                     #获取果冻的商品规格
                     i = findId(resp.json()['Result'], 'ProjectId', int(getattr(Reflex,'TProjectId')))
                     setattr(Reflex, 'TProductStandardId', str(i['ProductStandardId']))
+
 
         # web登录成功后，返回的body里面带有token信息，需要将token信息放在header里面一起请求
         if resp.text.find('accessToken') != -1:
@@ -122,6 +124,7 @@ class TestCases(unittest.TestCase):
             AccessToken = resp.json()['Result']['AccessToken']
             header['Authorization'] = 'Bearer ' + AccessToken
             setattr(Reflex, 'header', header)
+
         try:
             #----------待优化-------
             ActualResult={}
