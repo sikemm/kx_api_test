@@ -17,7 +17,7 @@ test_data = DoExcel(file_name).read_data(sheet_name)
 
 @ddt
 class TestCases(unittest.TestCase):
-    '''该类是完成账单和交班模块测试用例'''
+    '''该类是完成账单和交班模块测试用例  GetBill'''
     def setUp(self):
         '''每次用例开始执行前，创建一个读写excel的对象，读取出上传账单所需要的账单，班次号信息'''
         self.f = DoExcel(file_name)
@@ -67,9 +67,7 @@ class TestCases(unittest.TestCase):
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
 
-        # 会员支付成功后，获取支付id
-        if case['url'].find('MemberPay') != -1:
-            setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
+
 
         #交班之后，重新登陆，重新获取token
         if resp.text.find('AccessToken') != -1:
@@ -78,8 +76,12 @@ class TestCases(unittest.TestCase):
             header['Authorization'] = 'Bearer ' + AccessToken
             setattr(Reflex, 'header', header)
 
-        #执行了创建商品后，商品条码+1
+
         if resp.json()['Success'] == True:
+            # 会员支付成功后，获取支付id
+            if case['url'].find('MemberPay') != -1:
+                setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
+            # 执行了创建商品后，商品条码+1
             if url.find('CreateBaseProduct') !=-1:
                 BarCodeNew = str(int(getattr(Reflex,'BarCode'))+1)
                 self.f.write_data(2,1,BarCodeNew,'BarCode')
@@ -87,13 +89,32 @@ class TestCases(unittest.TestCase):
         try:
             #----------待优化-------
             ActualResult={}
-            ActualResult['Success'] = resp.json()['Success']
-            self.assertEqual(eval(case['ExpectedResult']),ActualResult)
+
+            if case['Module'] == 'GetBill':
+                # 获取单个账单
+                ActualResult['ClientBillPayDetailList'] = resp.json()['Result']['ClientBillPayDetailList']
+                ExpectedResult = eval(re_replace(case['ExpectedResult']))
+                self.assertDictEqual(ExpectedResult, ActualResult)
+            elif url.find('GetProductInfo') !=-1:
+                #获取新增的商品
+                if resp.json()['Success'] == True:
+                    if resp.json()['Result'] !=None:
+                        ActualResult['BarCode'] = resp.json()['Result']['BarCode']
+                    else:
+                        ActualResult['BarCode'] = None
+                else:
+                    ActualResult['Success'] = resp.json()['Success']
+                ExpectedResult = eval(re_replace(case['ExpectedResult']))
+                self.assertDictEqual(ExpectedResult, ActualResult)
+            else:
+                ActualResult['Success'] = resp.json()['Success']
+                self.assertEqual(eval(case['ExpectedResult']),ActualResult)
             test_result = 'pass'
         except AssertionError as e:
             test_result = 'failed'
-            error_message = resp.json()['Error']['Message']
-            MyLog().error('ERROR：{}'.format(error_message))
+            if resp.json()['Success'] == False:
+                error_message = resp.json()['Error']['Message']
+                MyLog().error('ERROR：{}'.format(error_message))
             MyLog().error('用例执行失败：{}'.format(e))
             raise e
         finally:

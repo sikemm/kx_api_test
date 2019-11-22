@@ -31,7 +31,10 @@ class DoExcel:
             row_data['Title'] = sheet.cell(i,4).value
             row_data['Method'] = sheet.cell(i, 5).value
             if sheet.cell(i,6).value !=None:
-                if sheet.cell(i,6).value.find('#PersonPhone#') !=-1:
+                if sheet.cell(i,6).value.find('#PersonPhoneNew#') !=-1:
+                    tel = str(int(self.read_tel('PersonPhone')) + 1000000)
+                    row_data['Params'] = sheet.cell(i, 6).value.replace('#PersonPhoneNew#',tel)
+                elif sheet.cell(i,6).value.find('#PersonPhone#') !=-1:
                     tel = self.read_tel('PersonPhone')
                     row_data['Params'] = sheet.cell(i, 6).value.replace('#PersonPhone#',tel)
                 else:

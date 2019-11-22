@@ -48,7 +48,7 @@ class Reflex:
     MemberUserId = None
     MemberPersonName = None
     MemberPayId = None
-
+    PersonPhone = None
     #===========上传账单模块所需的参数=======
     #账单号：读取excel里面的订单号
     BillNumber = None

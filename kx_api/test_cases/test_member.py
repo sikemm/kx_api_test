@@ -50,10 +50,11 @@ class TestCases(unittest.TestCase):
                 setattr(Reflex, 'MemberCardTypeLevelId', str(resp.json()['Result'][0]['Id']))
                 setattr(Reflex, 'MemberCardTypeId', str(resp.json()['Result'][0]['MemberCardTypeId']))
             if case['url'].find('CreateMemberInfo') !=-1:
-                # 新增会员成功后，获取客户id，会员id
+                # 新增会员成功后，获取客户id，会员id,会员电话号码
                 setattr(Reflex,'MemberPersonId',str(resp.json()['Result']['Id']))
                 setattr(Reflex,'MemberUserId',str(resp.json()['Result']['MemberUser']['Id']))
                 setattr(Reflex, 'MemberPersonName', str(resp.json()['Result']['PersonName']))
+                # setattr(Reflex, 'PersonPhone', params['PersonPhone'])
                 # 新增会员后，操作会员电话号码加1写入表格，便于下次使用
                 tel = str(int(eval(params)['PersonPhone']) + 1)
                 self.f.write_data(2, 1, tel, 'PersonPhone')
