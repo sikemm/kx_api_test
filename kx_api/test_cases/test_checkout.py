@@ -85,7 +85,7 @@ class TestCases(unittest.TestCase):
             if url.find('CreateBaseProduct') !=-1:
                 BarCodeNew = str(int(getattr(Reflex,'BarCode'))+1)
                 self.f.write_data(2,1,BarCodeNew,'BarCode')
-
+        print(resp.status_code)
         try:
             #----------待优化-------
             ActualResult={}

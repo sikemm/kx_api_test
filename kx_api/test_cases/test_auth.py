@@ -124,6 +124,7 @@ class TestCases(unittest.TestCase):
             AccessToken = resp.json()['Result']['AccessToken']
             header['Authorization'] = 'Bearer ' + AccessToken
             setattr(Reflex, 'header', header)
+        print(resp.status_code)
 
         try:
             #----------待优化-------

@@ -26,7 +26,7 @@ class Reflex:
     storeName = MyConfig().get_string('Bind', 'storeName')   #新增店铺名称
     MachineMac = MyConfig().get_string('Bind', 'MachineMac')
     MachineName = MyConfig().get_string('Bind', 'MachineName')
-
+    Platform = MyConfig().get_string('Bind', 'Platform')    #平台 1表示 pos   2表示安卓
 
 
     #版本号信息
@@ -48,6 +48,7 @@ class Reflex:
     MemberUserId = None
     MemberPersonName = None
     MemberPayId = None
+    MemberPayId2 = None
     PersonPhone = None
     #===========上传账单模块所需的参数=======
     #账单号：读取excel里面的订单号

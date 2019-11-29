@@ -61,8 +61,13 @@ class TestCases(unittest.TestCase):
             if case['Module'] == 'MemberPay':
                 if case['url'].find('MemberPay') !=-1:
                     # 会员支付成功后，获取支付id
-                    setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
-
+                    if case['Title'] == '会员支付2':
+                        setattr(Reflex, 'MemberPayId2', str(resp.json()['Result']['MemberPayId']))
+                    else:
+                        setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
+        print(resp.status_code)
+        print(getattr(Reflex, 'MemberPayId'))
+        print(getattr(Reflex, 'MemberPayId2'))
         try:
             #-------待优化-------
             ActualResult={}
