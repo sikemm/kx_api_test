@@ -42,22 +42,20 @@ class TestCases(unittest.TestCase):
         MyLog().info('URL：{0}，Params：{1}'.format(case['url'],params))
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
-        print(resp.text)
 
         if resp.json()['Success'] == True:
-            if url.find('GetMemberCardTypeLevelList') !=-1:
-                # 获取会员类型，会员卡等级[随便找一个，用于会员卡新增,现在是默认写死的
-                setattr(Reflex, 'MemberCardTypeLevelId', str(resp.json()['Result'][0]['Id']))
-                setattr(Reflex, 'MemberCardTypeId', str(resp.json()['Result'][0]['MemberCardTypeId']))
             if case['url'].find('CreateMemberInfo') !=-1:
                 # 新增会员成功后，获取客户id，会员id,会员电话号码
                 setattr(Reflex,'MemberPersonId',str(resp.json()['Result']['Id']))
                 setattr(Reflex,'MemberUserId',str(resp.json()['Result']['MemberUser']['Id']))
                 setattr(Reflex, 'MemberPersonName', str(resp.json()['Result']['PersonName']))
-                # setattr(Reflex, 'PersonPhone', params['PersonPhone'])
+                setattr(Reflex, 'PersonPhone',str(resp.json()['Result']['PersonPhone']))
                 # 新增会员后，操作会员电话号码加1写入表格，便于下次使用
                 tel = str(int(eval(params)['PersonPhone']) + 1)
                 self.f.write_data(2, 1, tel, 'PersonPhone')
+            if url.find('ModifyPersonPhone') !=-1:
+                setattr(Reflex, 'PersonPhoneNew',str(resp.json()['Result']['PersonPhone']))
+
             if case['Module'] == 'MemberPay':
                 if case['url'].find('MemberPay') !=-1:
                     # 会员支付成功后，获取支付id
@@ -66,13 +64,25 @@ class TestCases(unittest.TestCase):
                     else:
                         setattr(Reflex, 'MemberPayId', str(resp.json()['Result']['MemberPayId']))
         print(resp.status_code)
-        print(getattr(Reflex, 'MemberPayId'))
-        print(getattr(Reflex, 'MemberPayId2'))
+        # print(getattr(Reflex, 'MemberPayId'))
+        # print(getattr(Reflex, 'MemberPayId2'))
         try:
-            #-------待优化-------
-            ActualResult={}
-            ActualResult['Success'] = resp.json()['Success']
-            self.assertEqual(eval(case['ExpectedResult']),ActualResult)
+            # module == Member1,表示只判断返回true，false，Member否则需判断返回result的具体值
+            #Member2 表示判断result['MemberUser']
+            if case['Module'] == 'Member1':
+                self.assertEqual(eval(case['ExpectedResult'])['Success'],resp.json()['Success'])
+            elif case['Module'] == 'Member':
+                ActualResult = resp.json()['Result']
+                ExpectedResult = re_replace(case['ExpectedResult'])
+                self.assertDictContainsSubset(eval(ExpectedResult), ActualResult)
+            elif case['Module'] == 'Member2':
+                ActualResult = resp.json()['Result']['MemberUser']
+                ExpectedResult = re_replace(case['ExpectedResult'])
+                self.assertDictContainsSubset(eval(ExpectedResult), ActualResult)
+            else:
+                ActualResult = resp.json()['Result']['MemberPerson']['MemberUser']
+                ExpectedResult = re_replace(case['ExpectedResult'])
+                self.assertDictContainsSubset(eval(ExpectedResult), ActualResult)
             test_result = 'pass'
         except AssertionError as e:
             test_result = 'failed'

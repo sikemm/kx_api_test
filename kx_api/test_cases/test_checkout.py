@@ -68,7 +68,6 @@ class TestCases(unittest.TestCase):
         MyLog().info('ActualResult：{}'.format(resp.text))
 
 
-
         #交班之后，重新登陆，重新获取token
         if resp.text.find('AccessToken') != -1:
             header = getattr(Reflex, 'header')
@@ -85,6 +84,10 @@ class TestCases(unittest.TestCase):
             if url.find('CreateBaseProduct') !=-1:
                 BarCodeNew = str(int(getattr(Reflex,'BarCode'))+1)
                 self.f.write_data(2,1,BarCodeNew,'BarCode')
+            #获取一个国际条码，用于查询国际条码的商品
+            if url.find('GetBarCodeList') !=-1:
+                setattr(Reflex, 'chinaBarCode', str(resp.json()['Result'][0]))
+
         print(resp.status_code)
         try:
             #----------待优化-------
@@ -96,7 +99,7 @@ class TestCases(unittest.TestCase):
                 ExpectedResult = eval(re_replace(case['ExpectedResult']))
                 self.assertDictEqual(ExpectedResult, ActualResult)
             elif url.find('GetProductInfo') !=-1:
-                #获取新增的商品
+                #查询条码库中的商品
                 if resp.json()['Success'] == True:
                     if resp.json()['Result'] !=None:
                         ActualResult['BarCode'] = resp.json()['Result']['BarCode']

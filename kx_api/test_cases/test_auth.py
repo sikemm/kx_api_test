@@ -21,9 +21,12 @@ class TestCases(unittest.TestCase):
     def setUp(self):
         '''每次用例开始执行前，创建一个读写excel的对象'''
         self.f = DoExcel(file_name)
+        BarCode = self.f.read_tel('BarCode')
+        setattr(Reflex, 'BarCode', BarCode)
 
     def tearDown(self):
-        pass
+        BarCodeNew = str(int(getattr(Reflex, 'BarCode')) + 1)
+        self.f.write_data(2, 1, BarCodeNew, 'BarCode')
 
     @data(*test_data)
     def test_auth(self,case):
@@ -37,13 +40,12 @@ class TestCases(unittest.TestCase):
             params = re_replace(case['Params'])
         elif case['Method'].upper() == 'GET':
             params = eval(re_replace(case['Params']))
-
         MyLog().info('---=正在执行{0}模块第{1}条测试用例:{2}----'.format(case['Module'],case['CaseId'],case['Title']))
         MyLog().info('URL：{0}，Params：{1}'.format(case['url'],params))
         resp = HttpRequest().http_request(method, url, params,getattr(Reflex,'header'))
         MyLog().info('ActualResult：{}'.format(resp.text))
-        print(resp.text)
-        #绑定成功后，获取服务器返回的店铺storeid等,posid,绑定posid，注意str的使用，设置时，只能是字符串
+
+        #新增店铺、新增pos，绑定pos成功后，获取服务器返回的店铺storeid等,posid, 等注意str的使用，设置时，只能是字符串
         if resp.text.find('businessType') != -1:
             setattr(Reflex, 'StoreId', resp.json()['result']['id'])
         elif resp.text.find('communicationPassword') != -1:
@@ -52,20 +54,45 @@ class TestCases(unittest.TestCase):
             setattr(Reflex, 'ClientPosBindId', str(resp.json()['Result']['Id']))
 
 
+        # 商品分类id，name
+        if url.find('BaseProductCategory/Create') !=-1:
+            setattr(Reflex, 'productCategoryId', resp.json()['result']['id'])
+            setattr(Reflex, 'productCategoryIdName', resp.json()['result']['name'])
+        #获取新增商品的id
+        if url.find('BaseProduct/Create') !=-1:
+            if case['Title'].find('新增商品1') !=-1:
+                setattr(Reflex, 'productId1', resp.json()['result']['id'])
+                setattr(Reflex, 'productStandard1Id', resp.json()['result']['baseProductStandardList'][0]['baseProductStandardBarCodeList'][0]['baseProductStandardId'])
+            elif case['Title'].find('新增商品2') !=-1:
+                setattr(Reflex, 'productId2', resp.json()['result']['id'])
+                setattr(Reflex, 'productStandard2Id', resp.json()['result']['baseProductStandardList'][0]['baseProductStandardBarCodeList'][0]['baseProductStandardId'])
+
+            elif case['Title'].find('新增商品3') !=-1:
+                setattr(Reflex, 'productId3', resp.json()['result']['id'])
+                setattr(Reflex, 'productStandard3Id', resp.json()['result']['baseProductStandardList'][0]['baseProductStandardBarCodeList'][0]['baseProductStandardId'])
+
+        #获取会员卡类型id,会员卡等级id
+        if url.find('MemberCardType/CreateLevel') != -1:
+            setattr(Reflex, 'MemberCardTypeLevelId', resp.json()['result']['id'])
+        elif url.find('MemberCardType/Create') !=-1:
+            setattr(Reflex, 'MemberCardTypeId', resp.json()['result']['id'])
+
+        print(getattr(Reflex,'MemberCardTypeLevelId'))
+        print(getattr(Reflex, 'MemberCardTypeId'))
         #绑定成功后，获取基础信息中的某些参数，用于后续接口使用
         if case['Module'] != 'web' :
             if resp.json()['Success'] == True:
-                if url.find('GetBaseProductCategoryList') !=-1:
-                    # 获取商品分类主键,取返回后的第一个列表中的数据
-                    setattr(Reflex,'BaseProductCategoryId',str(resp.json()['Result'][0]['Id']))
-                if url.find('GetBaseProductList') !=-1:
-                    # 获取商品主键,根据以获取的商品分类去找商品
-                    i= findId(resp.json()['Result'],'ProductCategoryId',int(getattr(Reflex,'BaseProductCategoryId')))
-                    setattr(Reflex,'ProductId',str(i['Id']))
-                if url.find('GetBaseProductStandardList') !=-1:
-                    # 获取商品规格主键，根据获取的商品主键去找规格id
-                    i= findId(resp.json()['Result'],'ProductId',int(getattr(Reflex,'ProductId')))
-                    setattr(Reflex,'ProductStandardId',str(i['Id']))
+                # if url.find('GetBaseProductCategoryList') !=-1:
+                #     # 获取商品分类主键,取返回后的第一个列表中的数据
+                #     setattr(Reflex,'BaseProductCategoryId',str(resp.json()['Result'][0]['Id']))
+                # if url.find('GetBaseProductList') !=-1:
+                #     # 获取商品主键,根据以获取的商品分类去找商品
+                #     i= findId(resp.json()['Result'],'ProductCategoryId',int(getattr(Reflex,'BaseProductCategoryId')))
+                #     setattr(Reflex,'ProductId',str(i['Id']))
+                # if url.find('GetBaseProductStandardList') !=-1:
+                #     # 获取商品规格主键，根据获取的商品主键去找规格id
+                #     i= findId(resp.json()['Result'],'ProductId',int(getattr(Reflex,'ProductId')))
+                #     setattr(Reflex,'ProductStandardId',str(i['Id']))
                 if url.find('GetBasePaymentWayList') !=-1:
                     # 获取结账方式主键
                     #人民币
@@ -95,19 +122,19 @@ class TestCases(unittest.TestCase):
                     setattr(Reflex, 'UserId', str(UserId))
                 if url.find('GetProjectMasterList') !=-1:
                     # 营销方案主键数据待增加resp.text.find('全场8折') !=-1:
-                    i = findId(resp.json()['Result'], 'Name', '全场8折')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增全场8折')
                     setattr(Reflex, 'AZProjectId', str(i['Id']))
-                    i = findId(resp.json()['Result'], 'Name', '薯片7折')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增商品37折')
                     setattr(Reflex, 'ZProjectId', str(i['Id']))
-                    i = findId(resp.json()['Result'], 'Name', '果冻特价8元')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增商品2特价')
                     setattr(Reflex, 'TProjectId', str(i['Id']))
                 if url.find('GetProjectProductStandard4DiscountList') !=-1:
                     # 获取营销方案中商品规格主键
-                    #获取薯片的商品规格
+                    #获取折扣商品的商品规格
                     i = findId(resp.json()['Result'], 'ProjectId',int(getattr(Reflex,'ZProjectId')) )
                     setattr(Reflex, 'ZProductStandardId', str(i['ProductStandardId']))
                 if url.find('GetProjectProductStandard4SpecialPriceList') !=-1:
-                    #获取果冻的商品规格
+                    #获取特价商品的商品规格
                     i = findId(resp.json()['Result'], 'ProjectId', int(getattr(Reflex,'TProjectId')))
                     setattr(Reflex, 'TProductStandardId', str(i['ProductStandardId']))
 
