@@ -13,7 +13,6 @@ class Reflex:
 
     #公司编号和租户id
     TenancyName = MyConfig().get_string('base','TenancyName')
-    TenantId = MyConfig().get_string('base','TenantId')  #租户id，配置文件设置的定值
     # 获取新增店铺，新增pos，绑定pos需要的参数值
     BStoreCode = MyConfig().get_string('Bind', 'BStoreCode')  # 店铺编码 新增传入
     BPosCode = MyConfig().get_string('Bind', 'BPosCode')  # 新增pos编码
@@ -25,8 +24,8 @@ class Reflex:
     # 新增店铺，新增pos，新增营业员，绑定pos，获取id，pos id，营业员id，pos绑定id
     StoreId = None
     PosId = None
-    SalesManId = None
     ClientPosBindId = None
+    TenantId = None
 
 
 
@@ -96,6 +95,8 @@ class Reflex:
     BillNumber = None
     #源单单号
     OriginalBillNumber = None
+    #单据创建时间
+    CreationTime = None
     # #商品分类主键
     # BaseProductCategoryId = None
     # #获取商品id

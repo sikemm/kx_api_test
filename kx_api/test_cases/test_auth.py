@@ -52,6 +52,7 @@ class TestCases(unittest.TestCase):
             setattr(Reflex, 'PosId', resp.json()['result']['id'])
         elif resp.text.find('PosId') !=-1:
             setattr(Reflex, 'ClientPosBindId', str(resp.json()['Result']['Id']))
+            setattr(Reflex, 'TenantId', str(resp.json()['Result']['TenantId']))
 
 
         # 商品分类id，name
@@ -77,22 +78,9 @@ class TestCases(unittest.TestCase):
         elif url.find('MemberCardType/Create') !=-1:
             setattr(Reflex, 'MemberCardTypeId', resp.json()['result']['id'])
 
-        print(getattr(Reflex,'MemberCardTypeLevelId'))
-        print(getattr(Reflex, 'MemberCardTypeId'))
         #绑定成功后，获取基础信息中的某些参数，用于后续接口使用
         if case['Module'] != 'web' :
             if resp.json()['Success'] == True:
-                # if url.find('GetBaseProductCategoryList') !=-1:
-                #     # 获取商品分类主键,取返回后的第一个列表中的数据
-                #     setattr(Reflex,'BaseProductCategoryId',str(resp.json()['Result'][0]['Id']))
-                # if url.find('GetBaseProductList') !=-1:
-                #     # 获取商品主键,根据以获取的商品分类去找商品
-                #     i= findId(resp.json()['Result'],'ProductCategoryId',int(getattr(Reflex,'BaseProductCategoryId')))
-                #     setattr(Reflex,'ProductId',str(i['Id']))
-                # if url.find('GetBaseProductStandardList') !=-1:
-                #     # 获取商品规格主键，根据获取的商品主键去找规格id
-                #     i= findId(resp.json()['Result'],'ProductId',int(getattr(Reflex,'ProductId')))
-                #     setattr(Reflex,'ProductStandardId',str(i['Id']))
                 if url.find('GetBasePaymentWayList') !=-1:
                     # 获取结账方式主键
                     #人民币
@@ -122,11 +110,11 @@ class TestCases(unittest.TestCase):
                     setattr(Reflex, 'UserId', str(UserId))
                 if url.find('GetProjectMasterList') !=-1:
                     # 营销方案主键数据待增加resp.text.find('全场8折') !=-1:
-                    i = findId(resp.json()['Result'], 'Name', '自动新增全场8折')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增全场8折2')
                     setattr(Reflex, 'AZProjectId', str(i['Id']))
-                    i = findId(resp.json()['Result'], 'Name', '自动新增商品37折')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增商品37折2')
                     setattr(Reflex, 'ZProjectId', str(i['Id']))
-                    i = findId(resp.json()['Result'], 'Name', '自动新增商品2特价')
+                    i = findId(resp.json()['Result'], 'Name', '自动新增商品2特价2')
                     setattr(Reflex, 'TProjectId', str(i['Id']))
                 if url.find('GetProjectProductStandard4DiscountList') !=-1:
                     # 获取营销方案中商品规格主键
@@ -158,9 +146,16 @@ class TestCases(unittest.TestCase):
             ActualResult={}
             if case['Module'] == 'web':
                 ActualResult['success'] = resp.json()['success']
+                self.assertEqual(eval(case['ExpectedResult']), ActualResult)
+            elif case['Module'] == 'GetTenantSetting':
+                ActualResult1 = resp.json()['Result'][0]
+                self.assertDictContainsSubset(eval(case['ExpectedResult']),ActualResult1)
+            elif case['Module'] == 'GetStoreSetting':
+                ActualResult1 = resp.json()['Result'][0]
+                self.assertDictContainsSubset(eval(case['ExpectedResult']), ActualResult1)
             else:
                 ActualResult['Success'] = resp.json()['Success']
-            self.assertEqual(eval(case['ExpectedResult']),ActualResult)
+                self.assertEqual(eval(case['ExpectedResult']),ActualResult)
             test_result = 'pass'
         except AssertionError as e:
             test_result = 'failed'

@@ -22,5 +22,8 @@ config_path = os.path.join(os.path.split(os.path.split(current_path)[0])[0],'con
 
 if __name__ == '__main__':
     # print(config_path)
-    print(current_path)
+    # print(current_path)
     # print(test_report_path)
+    now = datetime.datetime.now()
+    curr = now.strftime('%Y-%m-%d %H:%M:%S')
+    print(curr)
